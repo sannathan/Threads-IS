@@ -9,7 +9,7 @@ pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
 int counter = 0;
 
 
-void *ReadFile(FILE *file);
+void *ReadFile(void *file);
 
 int main(){
     int num_files;
@@ -22,24 +22,24 @@ int main(){
     }
     printf("palavra a ser procurada: ");
     scanf("%s", search_word);
-    pthread_t *threads[num_files];
-    FILE *file_read[num_files];
+    pthread_t threads[num_files];
     int check;
     for(int i = 0; i < num_files; i++){
-        file_read[i] = fopen(files[i], "r"); 
-        check = pthread_create(threads[i], NULL, ReadFile, files[i]);
+        check = pthread_create(&threads[i], NULL, ReadFile, (void*) files[i]);
+        if(check){
+          printf("erro\n");
+        }
     }
     printf("Resultado: %d", counter);
-    for(int i = 0; i < num_files; i++){
-        fclose(file_read[i]);
-    }
-    pthread_exit(NULL);
     return 0;
 }
 
-void *ReadFile(FILE *file){
+void *ReadFile(void *file){
+    FILE *file_read;
+    file_read = fopen(file, "r");
     char string[50];
     while (fscanf(file, "%s", string) != EOF){
+        printf("palavra: %s\n", string);
         if(string){
             if(strcmp(string, search_word) == 0){
                 pthread_mutex_lock(&mymutex);
@@ -48,5 +48,6 @@ void *ReadFile(FILE *file){
             }
         }
     }
+    fclose(file_read);
+    pthread_exit(NULL);
 }
-
