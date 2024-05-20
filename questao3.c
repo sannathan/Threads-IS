@@ -3,9 +3,18 @@
 #include <stdlib.h>
 
 #define NUM_THREADS 5
-int n;
 
+/*Crio todas as variaveis globais necessarias*/
+int n;
+pthread_t clientes[NUM_THREADS];
+pthread_t banco1;
+pthread_mutex_t mutex;
+
+/*Funcoes que as threads farao*/
 void *operacoes(void *arg){
+
+    pthread_mutex_lock(&mutex); //Bloqueia o mutex para acessar regiao critica
+
     int *ops = (int *)malloc(n * sizeof(int));
     ops = (int *)arg;
 
@@ -13,16 +22,18 @@ void *operacoes(void *arg){
         if(ops[i] == 1){
             printf("O seu saldo atual eh: $1000\n");
         }
-        else if(ops[i] = 2){
+        else if(ops[i] == 2){
             printf("depositando...\n");
         }
-        else if(ops[i] = 3){
+        else if(ops[i] == 3){
             printf("Sacando...\n");
         }
         else{
             printf("Operacao invalida\n");
         }
     }
+
+    pthread_mutex_unlock(&mutex); /*Desbloqueia a thread*/
     pthread_exit(NULL);
 }
 
@@ -32,9 +43,6 @@ void *banco(void *arg){
 }
 
 int main(void){
-    pthread_t clientes[NUM_THREADS];
-    pthread_t banco;
-
     printf("Digite a quantidade de operacoes que deseja realizar:");
     scanf("%i", &n);
  
@@ -47,15 +55,16 @@ int main(void){
         }
 
         for(int i = 0; i < NUM_THREADS; i ++){
-            int ver = pthread_create(&clientes[i], NULL, operacoes, (void *)op);
+            printf("Thread: %d\n", i);
+            pthread_create(&clientes[i], NULL, operacoes, (void *)op);
+        }
 
-            if(ver){
-                printf("Erro ao criar thread: %i", i);
-                exit(-1);
-            }
+        for(int i = 0; i < NUM_THREADS; i++){
+            pthread_join(clientes[i], NULL);
         }
     }
     
     free(op);
+    pthread_mutex_destroy(&mutex);
     pthread_exit(NULL);
 }
