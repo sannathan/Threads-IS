@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 #define NUM_THREADS 5
-#define SIZE 9
+#define SIZE 8
 
 typedef struct{
     int *array;
@@ -28,12 +28,11 @@ int main() {
     // ----------------------------------------------------------------------
     // Preenchemos o nosso array base de forma pseudo-aleatória a fim de demonstrar que o nosso código não há um truque para funcionar em determinados casos
     for(int i = 0 ; i < SIZE; i++){
-        array[i] = rand() % 200;
+        array[i] = rand() % 1001;
     }
 
     // ----------------------------------------------------------------------
 
-    
     int segmentSize = SIZE / NUM_THREADS; // Variável que armazena o tamanho padrão dos arrays parciais
 
     pthread_barrier_init(&barrier, NULL, NUM_THREADS + 1);  // NUM_THREAD + 1 porque estamos contando com a thread principal (main);
@@ -88,10 +87,9 @@ void bubbleSort(ThreadData *arg){
 }
 void merge(){                 
     int indices[NUM_THREADS] = {0};
-    int segment = SIZE / NUM_THREADS;
 
     for(int i = 0; i < NUM_THREADS; i++){
-        indices[i] = i * segment; // Preenchemos  o array com os indices iniciais;
+        indices[i] = data[i].start; // Preenchemos  o array com os indices iniciais;
     }
 
     for(int x = 0; x < SIZE; x++){
@@ -99,21 +97,14 @@ void merge(){
         int valorMin = __INT_MAX__; 
         
         for(int y = 0; y < NUM_THREADS; y++){
-            if(y+1 == NUM_THREADS){ // Para o caso que o array parcial não tem o tamanho padrão
-                if(indices[y] < (((y+1) * segment) + SIZE % NUM_THREADS) && array[indices[y]] < valorMin){
-                valorMin = array[indices[y]];
+            if(indices[y] < data[y].end && data[y].array[indices[y]] < valorMin){
+                valorMin = data[y].array[indices[y]];
                 indexMin = y;
-                }
             }
-            else{
-                if(indices[y] < (y+1) * segment && array[indices[y]] < valorMin){
-                    valorMin = array[indices[y]];
-                    indexMin = y;
-                }
-            }
+            
         }
         if(indexMin != -1){
-                arrayResposta[x] = array[indices[indexMin]];
+                arrayResposta[x] = data[indexMin].array[indices[indexMin]];
                 indices[indexMin]++;
             }
     }
