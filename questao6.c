@@ -76,7 +76,6 @@ pthread_t escalonador; //Thread escalonador
 pthread_t threads[num_Threads]; //Threads a serem criadas
 pthread_mutex_t mutex1; //Mutex a ser utilizado em conjunto com as variaveis de condicao
 pthread_mutex_t mutex2; //Mutex para acessar a variavel compartilhada emProcesso
-pthread_mutex_t mutex3;
 pthread_cond_t cond;
 
 void *escalonamento(void *lista_pronto){
